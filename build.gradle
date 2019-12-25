@@ -1,3 +1,5 @@
+// https://www.tutorialspoint.com/hibernate/hibernate_examples.htm
+
 plugins {
     id 'java'
 }

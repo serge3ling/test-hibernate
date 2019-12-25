@@ -1,7 +1,6 @@
 package com.herokuapp.s3_test_hibernate;
 
 import java.util.List;
-import java.util.Date;
 import java.util.Iterator;
 
 import org.hibernate.HibernateException;
@@ -30,7 +29,7 @@ public class ManageEmployee {
         return factoryReady;
     }
 
-    public Integer addEmployee(String firstName, String lastName, int salary){
+    public Integer addEmployee(String firstName, String lastName, int salary) {
         Session session = factory.openSession();
         Transaction tx = null;
         Integer employeeID = null;
@@ -41,12 +40,78 @@ public class ManageEmployee {
             employeeID = (Integer) session.save(employee);
             tx.commit();
         } catch (HibernateException e) {
-            if (tx!=null) tx.rollback();
+            if (tx != null) {
+                tx.rollback();
+            }
             e.printStackTrace();
         } finally {
             session.close();
         }
         return employeeID;
+    }
+
+    public void updateEmployeeSalary(Integer id, int salary) {
+        Session session = factory.openSession();
+        Transaction tx = null;
+
+        try {
+            tx = session.beginTransaction();
+            Employee employee = (Employee) session.get(Employee.class, id);
+            employee.setSalary(salary);
+            session.update(employee);
+            tx.commit();
+        } catch (HibernateException e) {
+            if (tx != null) {
+                tx.rollback();
+            }
+            e.printStackTrace();
+        } finally {
+            session.close();
+        }
+    }
+
+    public void deleteEmployee(Integer id) {
+        Session session = factory.openSession();
+        Transaction tx = null;
+        Integer employeeID = null;
+
+        try {
+            tx = session.beginTransaction();
+            Employee employee = (Employee) session.get(Employee.class, id);
+            session.delete(employee);
+            tx.commit();
+        } catch (HibernateException e) {
+            if (tx != null) {
+                tx.rollback();
+            }
+            e.printStackTrace();
+        } finally {
+            session.close();
+        }
+    }
+
+    public void printEmployees() {
+        Session session = factory.openSession();
+        Transaction tx = null;
+
+        try {
+            tx = session.beginTransaction();
+            List employees = session.createQuery("from Employee").list();
+            for (Iterator iterator = employees.iterator(); iterator.hasNext(); ) {
+                Employee employee = (Employee) iterator.next();
+                String s = "id: " + employee.getId() + ", name: " + employee.getLastName() +
+                        ", " + employee.getFirstName() + ", salary: " + employee.getSalary();
+                System.out.println(s);;
+            }
+            tx.commit();
+        } catch (HibernateException e) {
+            if (tx != null) {
+                tx.rollback();
+                e.printStackTrace();
+            }
+        } finally {
+            session.close();
+        }
     }
 
     public void demo() {
@@ -55,7 +120,16 @@ public class ManageEmployee {
         ManageEmployee manageEmployee = new ManageEmployee();
 
         if (manageEmployee.isFactoryReady()) {
-            Integer empID1 = manageEmployee.addEmployee("Zara", "Ali", 1000);
+            Integer empId1 = manageEmployee.addEmployee("Zara", "Ali", 1000);
+            Integer empId2 = manageEmployee.addEmployee("Daisy", "Das", 5000);
+            Integer empId3 = manageEmployee.addEmployee("John", "Paul", 10000);
+
+            manageEmployee.printEmployees();
+
+            manageEmployee.updateEmployeeSalary(empId1, 5000);
+            manageEmployee.deleteEmployee(empId2);
+
+            manageEmployee.printEmployees();
         } else {
             System.out.println("Method isFactoryReady() returned false.");;
         }
